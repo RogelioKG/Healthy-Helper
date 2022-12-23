@@ -2,24 +2,28 @@
 from flask import Flask, request, abort, url_for
 from urllib.parse import parse_qsl, parse_qs
 
+
 # import line bot related
 from linebot.models import events
 from line_chatbot_api import *
-from service_actions.service import *
+from service_actions.exercise import *
 from service_actions.posture import *
+from service_actions.drink import *
 
 # import speech recognition
 import speech_recognition as sr
 
-# import others
+# import standard library
 import os
 import random
+
+# import others
+from variable import *
 
 
 # create flask server
 app = Flask(__name__)
-# ngrok link (每次都要換)
-ngrok_url = "https://9bf7-140-115-204-45.ngrok.io"
+
 
 
 @app.route("/callback", methods=["POST"])
@@ -56,7 +60,7 @@ def transcribe(wav_path):
         print(f"Could not request results from Google Speech Recognition service; {error}")
 
 
-def deal_with_text(event, receive_text):
+def deal_with_text(event, receive_text: str):
     messages = []
 
     if "坐姿提醒" in receive_text:
@@ -65,12 +69,55 @@ def deal_with_text(event, receive_text):
         messages.append(StickerSendMessage(package_id=446, sticker_id=2000))
         messages.append(TextSendMessage(text="功能還沒有做完請各位耐心等待RRRR~~~~"))
     elif "喝水提醒" in receive_text:
-        messages.append(drink(event))
+        messages.extend(drink(event))
     elif "運動提醒" in receive_text:
-        messages.append(exercise(event))
+        messages.extend(exercise(event))
     else:
         messages.append(StickerSendMessage(package_id=789, sticker_id=10882))
-        messages.append(TextSendMessage(text="抱歉我沒有聽懂，可以用其他方式再說一次嗎？"))
+        messages.append(TextSendMessage(text="抱歉我沒有聽懂\n可以用其他方式再說一次嗎？"))
+
+    return messages
+
+
+def deal_with_command(event, receive_text: str):
+    user_id = event.source.user_id
+    messages = []
+
+    if receive_text.startswith("/體重"):
+        try:
+            if not exist(user_id):
+                raise KeyError
+            weight = float(receive_text.split()[1])
+            if weight <= 0:
+                messages.append(TextSendMessage(text=f"❌ 你是外星人嗎？體重 {weight} kg🤔"))
+            else:
+                update_weight_and_expected(user_id, weight)
+                messages.append(TextSendMessage(text=f"✅ 體重更新完成\n你的每日需飲水量為 {formula(weight)} ml"))
+        except ValueError:
+            messages.append(TextSendMessage(text=f"❌ 嘿！你輸入的是數字嗎？🤔"))
+        except IndexError:
+            messages.append(TextSendMessage(text=f"❌ 嘿！你有輸入指令嗎？🤔"))
+        except KeyError:
+            messages.append(TextSendMessage(text=f"請先點選「喝水提醒」\n才能開啟此功能哦"))
+    elif receive_text.startswith("/容量"):
+        try:
+            if not exist(user_id):
+                raise KeyError
+            cup = int(receive_text.split()[1])
+            if cup <= 0:
+                messages.append(TextSendMessage(text=f"❌ 哪個異世界的水瓶是 {cup} ml🤔"))
+            else:
+                update_cup(user_id, cup)
+                messages.append(TextSendMessage(text=f"✅ 容量更新完成\n你的水瓶容量為 {cup} ml"))
+        except ValueError:
+            messages.append(TextSendMessage(text=f"❌ 嘿！你輸入的是整數嗎🤔"))
+        except IndexError:
+            messages.append(TextSendMessage(text=f"❌ 嘿！你有輸入指令嗎？🤔"))
+        except KeyError:
+            messages.append(TextSendMessage(text=f"請先點選「喝水提醒」\n才能開啟此功能哦"))
+    else:
+        messages.append(StickerSendMessage(package_id=789, sticker_id=10882))
+        messages.append(TextSendMessage(text="抱歉我沒有聽懂\n可以用其他方式再說一次嗎？"))
 
     return messages
 
@@ -96,7 +143,10 @@ def handle_something(event):
     messages = []
     if event.message.type == "text":
         receive_text = event.message.text
-        messages = deal_with_text(event, receive_text)
+        if receive_text[0] == '/':
+            messages = deal_with_command(event, receive_text)
+        else:
+            messages = deal_with_text(event, receive_text)
     elif event.message.type == "sticker":
         receive_sticker_id = event.message.sticker_id
         receive_package_id = event.message.package_id
@@ -107,13 +157,16 @@ def handle_something(event):
         with open(input_filename_jpg, "wb") as fd:
             for chunk in image_content.iter_content():
                 fd.write(chunk)
-        output_filename, ishunchback = detect_hunchback(input_filename_jpg)
-        messages.append(ImageSendMessage(original_content_url = ngrok_url + output_filename[1:],
-                                         preview_image_url = ngrok_url + output_filename[1:]))
-        if ishunchback:
-            messages.append(TextSendMessage(text="這是哪位？駝背好嚴重🤔"))
-        else:
-            messages.append(TextSendMessage(text="沒有駝背🤗"))
+        try:
+            output_filename, ishunchback = detect_hunchback(input_filename_jpg)
+            messages.append(ImageSendMessage(original_content_url = ngrok_url + output_filename[1:],
+                                            preview_image_url = ngrok_url + output_filename[1:]))
+            if ishunchback:
+                messages.append(TextSendMessage(text="這是哪位？駝背好嚴重🤔"))
+            else:
+                messages.append(TextSendMessage(text="沒有駝背🤗"))
+        except AttributeError:
+            messages.append(TextSendMessage(text="不行，我看不出來😵‍💫"))
     elif event.message.type == "audio":
         filename_wav = "temp_audio.wav"
         filename_mp3 = "temp_audio.mp3"
@@ -126,6 +179,8 @@ def handle_something(event):
         messages = deal_with_text(event, receive_text)
 
     line_bot_api.reply_message(event.reply_token, messages)
+
+
 
 # run app
 if __name__ == "__main__":

@@ -12,7 +12,6 @@ def detect_hunchback(filename: str) -> tuple[str, bool]:
     mp_pose = mp.solutions.pose                      # mediapipe 姿勢偵測
 
     img = cv2.imread(filename, cv2.IMREAD_COLOR)
-    img = cv2.resize(img, (300, 400))
 
     # 啟用姿勢偵測
     with mp_pose.Pose(
