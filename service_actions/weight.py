@@ -155,7 +155,7 @@ def test_data_for_weight(number: int) -> None:
             update_weight_in_weight(UserID, weight, date=test_date(2022, 10, i))
 
 
-####################### messages ######################
+######################### test ########################
 
 if __name__ == "__main__":
     test_data_for_weight(10)
