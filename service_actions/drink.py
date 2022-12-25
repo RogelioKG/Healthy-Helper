@@ -9,17 +9,16 @@ from global_variables import *
 ####################### messages ######################
 
 
-def drink(event, date: str = DATE):
-    user_id = event.source.user_id
+def drink(UserID: str, date: str = DATE):
     new = False
     messages = []
 
-    if exist_in_drink(user_id):
-        if date != fetch_last_updated(user_id):
-            update_drinked(user_id, reset=True)
-        update_drinked(user_id)
-        weight = fetch_weight_in_drink(user_id)
-        drinked = fetch_drinked(user_id)
+    if exist_in_drink(UserID):
+        if date != fetch_last_updated(UserID):
+            update_drinked(UserID, reset=True)
+        update_drinked(UserID)
+        weight = fetch_weight_in_drink(UserID)
+        drinked = fetch_drinked(UserID)
         expected = formula(weight)
         messages.append(TextSendMessage(text=f"達標飲水量：{expected}ml\n目前飲水量：{drinked}ml"))
         if drinked >= expected:
@@ -32,7 +31,7 @@ def drink(event, date: str = DATE):
         messages.append(TextSendMessage(text="嗨嗨，你是第一次使用吧😊\n請輸入你的「體重」\n與水瓶的「容量」吧\n從今以後我和你的水瓶\n就是好朋友囉！"))
         messages.append(TextSendMessage(text="🤖 輸入指令 「/體重 55.4」\n將你的體重設為 55.4 kg\n🤖 輸入指令 「/容量 400」\n將你的水瓶容量設為 400 ml\n今後也可以任意調整"))
         messages.append(TextSendMessage(text="之後只要喝完一杯水\n再點擊「喝水提醒」\n健康小幫手就會自動幫你紀錄哦👍"))
-        create_drink_user(user_id)
+        create_drink_user(UserID)
 
     return (messages, new)
 
@@ -130,6 +129,14 @@ def exist_in_drink(UserID: str) -> bool:
     result = cur.execute("SELECT EXISTS(SELECT 1 FROM Info WHERE UserID = ?)", (UserID,)).fetchall()[0][0]
     con.close()
     return bool(result)
+
+
+def delete_drink_user(UserID: str) -> None:
+    con = sqlite3.connect(DRINK_DATABASE_NAME)
+    cur = con.cursor()
+    cur.execute("DELETE FROM Info WHERE UserID = ?", (UserID,))
+    con.commit()
+    con.close()
 
 
 ###################### debugging ######################

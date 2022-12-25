@@ -1,8 +1,7 @@
-from urllib.parse import parse_qsl, parse_qs
 from line_chatbot_api import *
 
 
-def exercise(event):
+def exercise():
     messages = []
     messages.append(
             TemplateSendMessage(

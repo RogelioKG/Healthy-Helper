@@ -7,6 +7,8 @@ from linebot.exceptions import (
 from linebot.models import (
     MessageEvent,
     PostbackEvent,
+    UnfollowEvent,
+    FollowEvent,
     TextMessage,
     TextSendMessage,
     ImageSendMessage,
