@@ -75,7 +75,7 @@ def draw_plot(UserID: str, *, date: tuple[int, int, int]):
 def fetch_timestamp(UserID: str) -> str:
     con = sqlite3.connect(WEIGHT_DATABASE_NAME)
     cur = con.cursor()
-    result = cur.execute(f"SELECT timestamp FROM Month WHERE UserID = \'{UserID}\'").fetchall()[0][0]
+    result = cur.execute("SELECT timestamp FROM Month WHERE UserID = ?", (UserID,)).fetchall()[0][0]
     con.close()
     return result
 
@@ -83,7 +83,7 @@ def fetch_timestamp(UserID: str) -> str:
 def fetch_weight_in_weight(UserID: str, day: int) -> float:
     con = sqlite3.connect(WEIGHT_DATABASE_NAME)
     cur = con.cursor()
-    result = cur.execute(f"SELECT day_{day} FROM Month WHERE UserID = \'{UserID}\'").fetchall()[0][0]
+    result = cur.execute(f"SELECT day_{day} FROM Month WHERE UserID = ?", (UserID,)).fetchall()[0][0]
     con.close()
     return result
 
@@ -98,17 +98,17 @@ def update_weight_in_weight(UserID: str, weight: float, *, date: str = DATE) -> 
 
     if not is_the_same_month(fetch_timestamp(UserID), date):
         for i in range(day+1, 32):
-            cur.execute(f"UPDATE Month SET day_{i} = 0 WHERE UserID = \'{UserID}\'")
+            cur.execute(f"UPDATE Month SET day_{i} = 0 WHERE UserID = ?", (UserID,))
         while (day != 0):
-            cur.execute(f"UPDATE Month SET day_{day} = {weight} WHERE UserID = \'{UserID}\'")
+            cur.execute(f"UPDATE Month SET day_{day} = ? WHERE UserID = ?", (weight, UserID))
             day -= 1
     else:
-        cur.execute(f"UPDATE Month SET day_{day} = {weight} WHERE UserID = \'{UserID}\'")
+        cur.execute(f"UPDATE Month SET day_{day} = ? WHERE UserID = ?", (weight, UserID))
         while (day-1 != 0 and fetch_weight_in_weight(UserID, day-1) == 0):
             day -= 1
-            cur.execute(f"UPDATE Month SET day_{day} = {weight} WHERE UserID = \'{UserID}\'")
+            cur.execute(f"UPDATE Month SET day_{day} = ? WHERE UserID = ?", (weight, UserID))
 
-    cur.execute(f"UPDATE Month SET timestamp = \'{date}\' WHERE UserID = \'{UserID}\'")
+    cur.execute("UPDATE Month SET timestamp = ? WHERE UserID = ?", (date, UserID))
     con.commit()
     con.close()
 
@@ -119,7 +119,7 @@ def update_weight_in_weight(UserID: str, weight: float, *, date: str = DATE) -> 
 def create_weight_user(UserID: str, *, date: str = DATE) -> None:
     con = sqlite3.connect(WEIGHT_DATABASE_NAME)
     cur = con.cursor()
-    cur.execute(f"INSERT INTO Month (`UserID`, `timestamp`) VALUES (\'{UserID}\', \'{date}\')")
+    cur.execute("INSERT INTO Month (`UserID`, `timestamp`) VALUES (?, ?)", (UserID, date))
     con.commit()
     con.close()
 
@@ -127,7 +127,7 @@ def create_weight_user(UserID: str, *, date: str = DATE) -> None:
 def exist_in_weight(UserID: str) -> bool:
     con = sqlite3.connect(WEIGHT_DATABASE_NAME)
     cur = con.cursor()
-    result = cur.execute(f"SELECT EXISTS(SELECT 1 FROM Month WHERE UserID = \'{UserID}\')").fetchall()[0][0]
+    result = cur.execute("SELECT EXISTS(SELECT 1 FROM Month WHERE UserID = ?)", (UserID,)).fetchall()[0][0]
     con.close()
     return bool(result)
 

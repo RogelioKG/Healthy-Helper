@@ -57,7 +57,7 @@ def formula(weight: float) -> int:
 def fetch_weight_in_drink(UserID: str) -> float:
     con = sqlite3.connect(DRINK_DATABASE_NAME)
     cur = con.cursor()
-    weight = cur.execute(f"SELECT weight FROM Info WHERE UserID = \'{UserID}\'").fetchall()[0][0]
+    weight = cur.execute("SELECT weight FROM Info WHERE UserID = ?", (UserID,)).fetchall()[0][0]
     con.close()
     return weight
 
@@ -65,7 +65,7 @@ def fetch_weight_in_drink(UserID: str) -> float:
 def fetch_drinked(UserID: str) -> int:
     con = sqlite3.connect(DRINK_DATABASE_NAME)
     cur = con.cursor()
-    drinked = cur.execute(f"SELECT drinked FROM Info WHERE UserID = \'{UserID}\'").fetchall()[0][0]
+    drinked = cur.execute("SELECT drinked FROM Info WHERE UserID = ?", (UserID,)).fetchall()[0][0]
     con.close()
     return drinked
 
@@ -73,7 +73,7 @@ def fetch_drinked(UserID: str) -> int:
 def fetch_last_updated(UserID: str) -> str:
     con = sqlite3.connect(DRINK_DATABASE_NAME)
     cur = con.cursor()
-    result = cur.execute(f"SELECT last_updated FROM Info WHERE UserID = \'{UserID}\'").fetchall()[0][0]
+    result = cur.execute("SELECT last_updated FROM Info WHERE UserID = ?", (UserID,)).fetchall()[0][0]
     con.close()
     return result
 
@@ -84,7 +84,7 @@ def fetch_last_updated(UserID: str) -> str:
 def update_weight_in_drink(UserID: str, weight: float, *, date: str = DATE) -> None:
     con = sqlite3.connect(DRINK_DATABASE_NAME)
     cur = con.cursor()
-    cur.execute(f"UPDATE Info SET weight = {weight}, last_updated = \'{date}\' WHERE UserID = \'{UserID}\'")
+    cur.execute("UPDATE Info SET weight = ?, last_updated = ? WHERE UserID = ?", (weight, date, UserID))
     con.commit()
     con.close()
 
@@ -96,10 +96,10 @@ def update_drinked(UserID: str, *, date: str = DATE, reset: bool = False) -> Non
     if reset:
         drinked = 0
     else:
-        drinked, cup = cur.execute(f"SELECT drinked, cup FROM Info WHERE UserID = \'{UserID}\'").fetchall()[0]
+        drinked, cup = cur.execute("SELECT drinked, cup FROM Info WHERE UserID = ?", (UserID,)).fetchall()[0]
         drinked += cup
 
-    cur.execute(f"UPDATE Info SET drinked = {drinked}, last_updated = \'{date}\' WHERE UserID = \'{UserID}\'")
+    cur.execute("UPDATE Info SET drinked = ?, last_updated = ? WHERE UserID = ?", (drinked, date, UserID))
     con.commit()
     con.close()
 
@@ -107,7 +107,7 @@ def update_drinked(UserID: str, *, date: str = DATE, reset: bool = False) -> Non
 def update_cup(UserID: str, cup: int, *, date: str = DATE) -> None:
     con = sqlite3.connect(DRINK_DATABASE_NAME)
     cur = con.cursor()
-    cur.execute(f"UPDATE Info SET cup = {cup}, last_updated = \'{date}\' WHERE UserID = \'{UserID}\'")
+    cur.execute("UPDATE Info SET cup = ?, last_updated = ? WHERE UserID = ?", (cup, date, UserID))
     con.commit()
     con.close()
 
@@ -119,7 +119,7 @@ def create_drink_user(UserID: str, weight: float = 0, cup: int = 0, *, date: str
     con = sqlite3.connect(DRINK_DATABASE_NAME)
     cur = con.cursor()
     drinked = 0
-    cur.execute(f"INSERT INTO Info (`UserID`, `weight`, `drinked`, `cup`, `last_updated`) VALUES (\'{UserID}\',{weight},{drinked},{cup},\'{date}\')")
+    cur.execute("INSERT INTO Info (`UserID`, `weight`, `drinked`, `cup`, `last_updated`) VALUES (?,?,?,?,?)", (UserID, weight, drinked, cup, date))
     con.commit()
     con.close()
 
@@ -127,7 +127,7 @@ def create_drink_user(UserID: str, weight: float = 0, cup: int = 0, *, date: str
 def exist_in_drink(UserID: str) -> bool:
     con = sqlite3.connect(DRINK_DATABASE_NAME)
     cur = con.cursor()
-    result = cur.execute(f"SELECT EXISTS(SELECT 1 FROM Info WHERE UserID = \'{UserID}\')").fetchall()[0][0]
+    result = cur.execute("SELECT EXISTS(SELECT 1 FROM Info WHERE UserID = ?)", (UserID,)).fetchall()[0][0]
     con.close()
     return bool(result)
 

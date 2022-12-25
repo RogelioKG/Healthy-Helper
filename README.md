@@ -1,7 +1,7 @@
 ## **LINE Bot 程式運作**
 
 > ### **`提醒`**
-> 1. variable.py 裡的 NGROK_URL，每開一次 ngrok 要手動更改連結
+> 1. global_variable.py 裡的 NGROK_URL，每開一次 ngrok 要手動更改連結
 
 
 > ### **`健康小幫手`**
@@ -85,10 +85,16 @@
 
 
 > ### **`Bugs or Doubts`**
-> 1. **Doubts** 在判斷駝背的程式 hunchback.py 中，輸入非人類的圖片可能導致 Attributes Error
-> - [x] Solved: 已解決，單純回復使用者無法處理
-> 2. **Doubts** 在判斷駝背的程式 hunchback.py 中，resize 有可能導致判定失準
-> - [x] Solved: 已解決，就按原大小就好，速度比較慢沒關係，圖片處理很正常的
-> 3. **Doubts** 程式碼的架構在加上 weight.py 後變得很龐大 (或者是說我從來沒寫過這麼多行)
->               我很慶幸它是可以運作的，但我認為這會讓程式碼越來越難以維護
->               我認為我是使用很粗糙的方式在使用 database，這也可能導致程式運作變慢
+> 1. **Doubts - 12/22** \
+> 在判斷駝背的程式 hunchback.py 中，輸入非人類的圖片可能導致 Attributes Error
+> - [x] Solved: 單純回復使用者無法處理
+> 2. **Doubts - 12/22**\
+> 在判斷駝背的程式 hunchback.py 中，resize 有可能導致判定失準
+> - [x] Solved: 就按原大小就好，速度比較慢沒關係，圖片處理很正常的
+> 3. **Doubts - 12/24** \
+> 程式碼的架構在加上 weight.py 後變得很龐大 (或者是說我從來沒寫過這麼多行)
+> - 我很慶幸它是可以運作的，但我認為這會讓程式碼越來越難以維護，\
+>   我認為我是使用很粗糙的方式在使用 database，這也可能導致程式運作變慢。
+> 4. **Doubts - 12/25** \
+> 原先的 SQLite 指令使用 f-string 可能導致 SQL injection attack
+> - [x] Solved: 全面改用 DB-API’s parameter substitution

@@ -99,7 +99,9 @@ def deal_with_command(event, receive_text: str):
     user_id = event.source.user_id
     messages = []
 
-    if receive_text.startswith("/體重"):
+    if receive_text.startswith("/指令"):
+        messages.append(TextSendMessage(text="🤖 指令表 🤖\n🔰 /體重 [小數(kg)]：輸入體重\n🔰 /容量 [整數(kg)]：輸入水瓶容量\n🔰 /晚餐：晚餐決定器\n(功能未完成，敬請期待)"))
+    elif receive_text.startswith("/體重"):
         has_drink_id = exist_in_drink(user_id)
         has_weight_id = exist_in_weight(user_id)
         try:
@@ -147,9 +149,9 @@ def deal_with_command(event, receive_text: str):
             messages.append(TextSendMessage(text=f"❌ 嘿！你有輸入指令嗎？🤔"))
         except KeyError:
             messages.append(TextSendMessage(text=f"請先點選「喝水提醒」\n才能開啟此功能哦"))
-    else:
+    elif receive_text.startswith("/"):
         messages.append(StickerSendMessage(package_id=789, sticker_id=10882))
-        messages.append(TextSendMessage(text="抱歉我沒有聽懂\n可以用其他方式再說一次嗎？"))
+        messages.append(TextSendMessage(text="嗯？我沒有這個指令欸\n如果忘記的話可以輸入「/指令」\n來查看可以使用哪些指令哦！"))
 
     return messages
 
@@ -200,8 +202,8 @@ def handle_something(event):
         except AttributeError:
             messages.append(TextSendMessage(text="不行，我看不出來😵‍💫"))
     elif event.message.type == "audio":
-        filename_wav = "temp_audio.wav"
-        filename_mp3 = "temp_audio.mp3"
+        filename_wav = "./static/audio/temp_audio.wav"
+        filename_mp3 = "./static/audio/temp_audio.mp3"
         audio_content = line_bot_api.get_message_content(event.message.id)
         with open(filename_mp3, "wb") as fd:
             for chunk in audio_content.iter_content():
