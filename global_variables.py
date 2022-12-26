@@ -1,7 +1,7 @@
 import datetime
 
 # ngrok url 每次都要換
-NGROK_URL = "https://873f-140-115-204-45.ngrok.io"
+NGROK_URL = "https://healthy-helper.azurewebsites.net"
 DRINK_DATABASE_NAME = "./databases/DB_drink.db"
 WEIGHT_DATABASE_NAME = "./databases/DB_weight.db"
 DINNER_DATABASE_NAME = "./databases/DB_dinner.db"
