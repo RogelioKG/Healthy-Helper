@@ -29,7 +29,8 @@ from global_variables import *
 # create flask server
 app = Flask(__name__)
 
-
+@app.route('/')
+def index():
 
 @app.route("/callback", methods=["POST"])
 def callback():
